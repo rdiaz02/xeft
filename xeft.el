@@ -697,6 +697,30 @@ The score is the number of search phrases that appears in TITLE."
   (interactive)
   (xeft-refresh t))
 
+
+(defun file-name-extension-no-rm-bckp (filename &optional period)
+  "Return FILENAME's final \"extension\" including backup version strings.
+The extension, in a file name, is the part that begins with the last `.',
+except that a leading `.' of the file name, if there is one, doesn't count.
+This function is the same as `file-name-extension', except it does not call
+`file-name-sans-versions' (the function responsible of removing
+any parts that indicate backup versions and
+version strings.
+Return nil for extensionless file names such as `foo'.
+Return the empty string for file names such as `foo.' that end in a period.
+
+By default, the returned value excludes the period that starts the
+extension, but if the optional argument PERIOD is non-nil, the period
+is included in the value, and in that case, if FILENAME has no
+extension, the value is \"\"."
+  (save-match-data
+    (let ((file  (file-name-nondirectory filename)))
+      (if (and (string-match "\\.[^.]*\\'" file)
+	       (not (eq 0 (match-beginning 0))))
+          (substring file (+ (match-beginning 0) (if period 0 1)))
+	(if period
+	    "")))))
+
 (defun xeft-default-file-filter (file)
   "Return nil if FILE should be ignored.
 
@@ -706,7 +730,7 @@ directories, dot files, and files matched by
   (and (file-regular-p file)
        (not (string-prefix-p
              "." (file-name-base file)))
-       (not (member (file-name-extension file)
+       (not (member (file-name-extension-no-rm-bckp file) 
                     xeft-ignore-extension))))
 
 (defun xeft-default-directory-filter (dir)
